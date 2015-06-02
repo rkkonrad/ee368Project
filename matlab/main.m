@@ -49,26 +49,44 @@ end
 % Algorithm Testing
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 psnr = @(img, ref) 10*log10(1^2/(norm(img(:) - ref(:))^2 / (size(img,1) * size(img,2))));
+numScenes = 1;
+numDepths = 1;
 
-% for i = 1:3
-%     disp(['Computing Zhou Dof for i = ' num2str(i) ]);
-% %     [incDOF(:,:,:,1) time(1,i)] = ZhouFiltering(img, depth, 0.062, dEye);
-% %     psnrDof(1,i) = psnr(incDOF(:,:,:,i), ref{1});
-%     
-%     disp(['Computing Bilatral Dof for i = ' num2str(i) ]);
-%     
-%     disp(['Computing Recursive Dof for i = ' num2str(i) ]);
-%     [incDOF(:,:,:,3) time(3,i)] = recursiveFiltering(img, depth, 0.062, dEye);
-%     psnrDof(3,i) = psnr(incDOF(:,:,:,3), ref{1});
-%     
-%     dof{i} = incDOF;    
-% end
+structForm = struct('img', {}, 'time', {}, 'psnr', {});
 
-A = 100:100:500;
-for i = 1:size(A,2);
-    [incDOF(:,:,:,i) time(3,i)] = recursiveFiltering(img, depth, 0.062, dEye, A(i));
-    psnrDof(i) = psnr(incDOF(:,:,:,i), ref{1});
-    i
+zhou    = structForm;
+bilat   = structForm;
+rec     = structForm;
+
+for scene = 1:numScenes
+    for z = 1:numDepths
+        disp(['Computing Zhou Dof for z = ' num2str(z) ]);
+        [zhou(scene,z).img zhou(scene,z).time] = ZhouFiltering(img, depth, 0.062, dEye);
+        zhou(scene,z).psnr = psnr(zhou(scene,z).img, ref{1});
+
+        disp(['Computing Bilatral Dof for i = ' num2str(z) ]);
+        [bilat(scene,z).img bilat(scene,z).time] = bilateralFiltering(img, depth, 0.062, dEye);
+        bilat(scene,z).psnr = psnr(bilat(scene,z).img, ref{1});
+
+        disp(['Computing Recursive Dof for i = ' num2str(z) ]);
+        [rec(scene,z).img rec(scene,z).time] = recursiveFiltering(img, depth, 0.062, dEye, 500);
+        rec(scene,z).psnr = psnr(rec(scene,z).img, ref{1});
+    end
 end
 
-figure; plot(A,psnrDof);
+avgSceneTimeZhou = mean([zhou.time],2);
+avgSceneTimeBilat = mean([bilat.time],2);
+avgSceneTimeRec = mean([rec.time],2);
+
+avgScenePSNRZhou = mean([zhou.psnr], 2);
+avgScenePSNRBilat = mean([bilat.psnr], 2);
+avgScenePSNRRec = mean([rec.psnr], 2);
+
+% A = 100:100:500;
+% for i = 1:size(A,2);
+%     [incDOF(:,:,:,i) time(3,i)] = recursiveFiltering(img, depth, 0.062, dEye, A(i));
+%     psnrDof(i) = psnr(incDOF(:,:,:,i), ref{1});
+%     i
+% end
+% 
+% figure; plot(A,psnrDof);

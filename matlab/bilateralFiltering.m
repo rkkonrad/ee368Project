@@ -1,21 +1,19 @@
-clear all;
-close all;
+function [ outImg, time ] = bilateralFiltering( img, depth, fplane, dEye)
+% Runs the algorithm from Zhou 2007 on the image and depth provided
+%   img     -- RGB image to be filtered
+%   depth   -- depth map
+%   fplane  -- distance to the plane in focus
+%   dEye    -- diameter of pupil (effective aperture)
 
-% Function Definitions
-calculateCoC =  @(D_eye, depthFrag, depthFocal) ...
-                abs(D_eye * (depthFrag - depthFocal) ./ depthFrag)/2;
-gaussian = @(d,sigma) 1/(2*pi*sigma^2) * exp(-d/(2*sigma^2));            
-bilateral = @(S, sigmaS, R, sigmaR) gaussian(S,sigmaS)*gaussian(R,sigmaR); %don't forget to normalize after
-
-initialize;
+sizeIm = size(img);
 
 tic
 % Pad Image and Depth Buffer
-cocMatrix = calculateCoC(D_eye, depthW, focalDepth)*1000;
+cocMatrix = calculateCoC(dEye, depth, fplane)*1000;
 maxCoC = max(ceil(cocMatrix(:)));
 
 img = padarray(img, [maxCoC maxCoC], 'replicate');
-depthW = padarray(depthW, [maxCoC maxCoC], 'replicate');
+depth = padarray(depth, [maxCoC maxCoC], 'replicate');
 cocMatrix = padarray(cocMatrix, [maxCoC maxCoC], 'replicate');
 
 % Algorithm Parameters
@@ -26,7 +24,7 @@ sigmaR = 1.0;
 outImg = zeros(sizeIm);
 for i = maxCoC+1:size(img,1)-maxCoC
     for j = maxCoC+1:size(img,2) - maxCoC
-        pDepth = depthW(i,j);
+        pDepth = depth(i,j);
         pCoC = cocMatrix(i,j);
         roundCoC = round(pCoC);
         weights = zeros(roundCoC);
@@ -41,9 +39,9 @@ for i = maxCoC+1:size(img,1)-maxCoC
                 if(S > roundCoC)
                     continue;
                 end
-                qDepth = depthW(i+x, j+y);
+                qDepth = depth(i+x, j+y);
                 weights(x+roundCoC+1, y+roundCoC+1) = ...
-                    bilateral(S^2, sigmaS, (pDepth-qDepth)^2, sigmaR);
+                    bilateral(S, sigmaS, pDepth-qDepth, sigmaR);
             end
         end
         imgPiece = img(i-roundCoC:i+roundCoC, j-roundCoC:j+roundCoC,:);
@@ -52,5 +50,22 @@ for i = maxCoC+1:size(img,1)-maxCoC
     end
 end
 time = toc;
-display(['The bilateral filtering algorithm took ' num2str(time) ' seconds to compute']);
-figure; imshow(outImg,[]);
+% display(['The bilateral filtering algorithm took ' num2str(time) ' seconds to compute']);
+% figure; imshow(outImg,[]);
+
+end
+
+% Calculates the circle of confusion radius
+function [coc] = calculateCoC(dEye, depthFrag, depthFocal)
+    coc = abs(dEye * (depthFrag - depthFocal) ./ depthFrag)/2;
+end
+
+% Calculates value of gaussian at point d
+function [val] = gaussian(d, sigma)
+    val = 1/(sqrt(2*pi)*sigma) * exp(-d^2/(2*sigma^2));
+end
+
+% Calculates value of filateral filer at points S and R
+function [val] = bilateral(S, sigmaS, R, sigmaR)
+   val =  gaussian(S,sigmaS)*gaussian(R,sigmaR); %don't forget to normalize after
+end
