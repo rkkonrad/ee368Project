@@ -26,12 +26,12 @@ for i = 1:3
     refFull{:,:,:,i} = im2double(imread([apDir 'ref_full_' num2str(i) '.png']));
 end
 
-imgSmall = im2double(imread('apertureSamples/small/1/center/image_.png'));
-depthSmall = im2double(imread('apertureSamples/small/2/center/depth_.png'));
+imgSmall = im2double(imread('apertureSamples/imageSmall.png'));
+depthSmall = im2double(imread('apertureSamples/depthSmall.png'));
 depthSmall = DepthToWorld(depthSmall(:,:,3), zClipNear, zClipFar);
 
-imgFull = im2double(imread('apertureSamples/full/1/center/image_.png'));
-depthFull = im2double(imread('apertureSamples/full/1/center/depth_.png'));
+imgFull = im2double(imread('apertureSamples/imageFull.png'));
+depthFull = im2double(imread('apertureSamples/depthFull.png'));
 depthFull = DepthToWorld(depthFull(:,:,3), zClipNear, zClipFar);
 
 % Use small images (for testing) or full images (for performance checks)
