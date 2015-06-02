@@ -1,29 +1,30 @@
-function [ outImg, time ] = recursiveFiltering( img, depth, fplane, dEye, scale)
-% Renders DOF via recursive algorithm defined in Xu 2014
-%   img     -- RGB image to be filtered
-%   depth   -- depth map
+clear all;
+close all;
+
+initialize;
+%img = padarray(img, [1,1], 'replicate');
+%depth = padarray(depthW, [1 1], 'replicate');
+
+calculateCoC =  @(depthFrag, depthFocal) ...
+                abs(depthFrag - depthFocal) ./ depthFrag;
 
 tic
-
-fpixelSize = 0.00273843226;
-
-sizeIm = size(img);
-A = dEye/2 * scale; % adjust this to project COC on depth plane to screen
+A = D_eye/2 * 1000; % adjust this to project COC on depth plane to screen
 Cmin = 0.5;
-cocMatrix = A * calculateCoC(depth, fplane);
+cocMatrix = A * calculateCoC(depthW, focalDepth);
 
 % Generate Depth Thresholds: D1, D2
-D1 = A*fplane / (A + Cmin);
-D2 = A*fplane / (A - Cmin);
+D1 = A*focalDepth / (A + Cmin);
+D2 = A*focalDepth / (A - Cmin);
 
     
 % Segment Image based on focus regions
 % Foreground out-of-focus (FOR) -- 1
 % In-focus (IR)                 -- 2
 % Background out-of-focus (BOR) -- 3
-FOR = (depth <= D1) * 1;
-IR  = (depth > D1 & depth <= D2)* 2;
-BOR = (depth > D2) * 3;
+FOR = (depthW <= D1) * 1;
+IR  = (depthW > D1 & depthW <= D2)* 2;
+BOR = (depthW > D2) * 3;
 Regions = FOR+IR+BOR;
 
 % Compute Weights
@@ -123,12 +124,5 @@ end
 
 time = toc;
 outImg = imgRec(:,:,:,end);
-% display(['The recursive filtering algorithm took ' num2str(time) ' seconds to compute']);
-% figure; imshow(outImg);
-
-end
-
-% Calculates the circle of confusion radius
-function [coc] = calculateCoC(depthFrag, depthFocal)
-    coc = abs(depthFrag - depthFocal) ./ depthFrag;
-end
+display(['The recursive filtering algorithm took ' num2str(time) ' seconds to compute']);
+figure; imshow(outImg);

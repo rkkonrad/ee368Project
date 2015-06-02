@@ -1,14 +1,14 @@
 clear all;
 close all;
 
-imgDir = 'images/apertureSamples/1/';
+imgDir = 'apertureSamples/full/3/';
 imgFiles = dir([imgDir '*.png']);
 
 tempImg = im2double(imread([imgDir imgFiles(1).name]));
-apSample = zeros([size(tempImg) size(imgFiles)]);
+apSample = zeros(size(tempImg));
 for i = 1:size(imgFiles,1)
-    apSample(:,:,:,i) = im2double(imread([imgDir imgFiles(i).name])); 
+    apSample = apSample + im2double(imread([imgDir imgFiles(i).name])); 
 end
 
-reference = sum(apSample,4)/size(apSample,4);
+reference = apSample/size(imgFiles,1);
 figure; imshow(reference);
