@@ -3,9 +3,9 @@ clear; close all;
 initialize;
 
 % Function Definitions
+intensityFactor = @(rp) 1/rp^2;
 calculateCoC =  @(D_eye, depthFrag, depthFocal) ...
                 abs(D_eye * (depthFrag - depthFocal) ./ depthFrag)/2;
-intensityFactor = @(rp) 1/rp^2;
 
 % Algorithm Parameters
 filterWidth = 9;

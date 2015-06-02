@@ -123,4 +123,6 @@ for pass = 1:3
 end
 
 time = toc;
+outImg = imgRec(:,:,:,end);
 display(['The recursive filtering algorithm took ' num2str(time) ' seconds to compute']);
+figure; imshow(outImg);
