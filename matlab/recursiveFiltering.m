@@ -3,7 +3,7 @@ function [ outImg, time ] = recursiveFiltering( img, depth, fplane, dEye, scale)
 %   img     -- RGB image to be filtered
 %   depth   -- depth map
 
-tic
+ tic
 
 fpixelSize = 0.00273843226;
 
@@ -67,12 +67,12 @@ for i = 1:size(img,1)-1
         end
         
         qCoC = cocMatrix(i+1,j);
-        if( round(pCoC) >= i)
-            pCoCs = cocMatrix(1:i+1+round(pCoC), j);
-        elseif (i+1+round(pCoC) >= size(img,1))
-            pCoCs = cocMatrix(i+1-round(pCoC):end, j);
+        if( round(qCoC) >= i)
+            qCoCs = cocMatrix(1:i+1+round(qCoC), j);
+        elseif (i+1+round(qCoC) >= size(img,1))
+            qCoCs = cocMatrix(i+1-round(qCoC):end, j);
         else
-            pCoCs = cocMatrix(i+1-round(pCoC):i+1+round(pCoC), j);
+            qCoCs = cocMatrix(i+1-round(qCoC):i+1+round(qCoC), j);
         end
         
         maxCoC = max([pCoCs; qCoCs]);

@@ -10,23 +10,29 @@ sizeIm = size(img);
 tic
 % Pad Image and Depth Buffer
 cocMatrix = calculateCoC(dEye, depth, fplane)*1000;
-maxCoC = max(ceil(cocMatrix(:)));
+maxCoC = min([max(ceil(cocMatrix(:))) 10]);
 
 img = padarray(img, [maxCoC maxCoC], 'replicate');
 depth = padarray(depth, [maxCoC maxCoC], 'replicate');
 cocMatrix = padarray(cocMatrix, [maxCoC maxCoC], 'replicate');
 
 % Algorithm Parameters
-sigmaS = 1.0;
-sigmaR = 1.0;
+sigmaS = 10.0;
+sigmaR = 10.0;
 
 
 outImg = zeros(sizeIm);
-for i = maxCoC+1:size(img,1)-maxCoC
-    for j = maxCoC+1:size(img,2) - maxCoC
+for i = maxCoC+1:size(img,1)-maxCoC-1
+    if(i == 310)
+           disp('hi'); 
+        end
+    for j = maxCoC+1:size(img,2) - maxCoC-1
+        if(j == 650)
+           disp('hi2'); 
+        end
         pDepth = depth(i,j);
         pCoC = cocMatrix(i,j);
-        roundCoC = round(pCoC);
+        roundCoC = min([round(pCoC) 10]);
         weights = zeros(roundCoC);
         if(roundCoC == 0)
             outImg(i-maxCoC, j-maxCoC,:) = img(i,j,:);
@@ -48,6 +54,7 @@ for i = maxCoC+1:size(img,1)-maxCoC
         weightedImg = repmat(weights, [1 1 3]) .* imgPiece;
         outImg(i-maxCoC, j-maxCoC,:) = sum(sum(weightedImg)) / sum(weights(:));
     end
+    i
 end
 time = toc;
 % display(['The bilateral filtering algorithm took ' num2str(time) ' seconds to compute']);

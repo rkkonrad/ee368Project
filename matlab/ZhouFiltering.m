@@ -14,7 +14,7 @@ img = padarray(img, [filterR, filterR], 'replicate');
 depth = padarray(depth, [filterR, filterR], 'replicate');
 
 % Precomputes coc Matrix
-cocMatrix = calculateCoC(dEye, depth, fplane)*1000;
+cocMatrix = calculateCoC(dEye, depth, fplane)*2000;
 
 tic
 for i = filterR+1 : size(depth,1) - filterR
@@ -40,7 +40,6 @@ for i = filterR+1 : size(depth,1) - filterR
         imgPiece = img(i-filterR:i+filterR, j-filterR:j+filterR, :);
         outImg(i-filterR,j-filterR,:) = sum(sum(imgPiece .* repmat(weights, [1 1 3]))) / sum(weights(:));
     end
-    i
 end
 time = toc;
 
